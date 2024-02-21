@@ -1,0 +1,2 @@
+.tiff filter=lfs diff=lfs merge=lfs -text
+/Users/roganich/Documents/GitHub/Uniandes_IBIO4820_202410/Lab1/data/wc2.1_country/COL_wc2.1_30s_bio.tif filter=lfs diff=lfs merge=lfs -text
