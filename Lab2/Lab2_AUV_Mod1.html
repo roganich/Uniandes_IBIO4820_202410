@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.433">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Lab2_AUV_Mod1_Autocorrelation</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="Lab2_AUV_Mod1_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Lab2_AUV_Mod1_files/libs/quarto-html/quarto.js"></script>
+<script src="Lab2_AUV_Mod1_files/libs/quarto-html/popper.min.js"></script>
+<script src="Lab2_AUV_Mod1_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Lab2_AUV_Mod1_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Lab2_AUV_Mod1_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Lab2_AUV_Mod1_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Lab2_AUV_Mod1_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Lab2_AUV_Mod1_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Lab2_AUV_Mod1_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Lab2_AUV_Mod1_Autocorrelation</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="cargue-las-librerías-a-utilizar-terra-tmap-sf-spdep." class="level4">
+<h4 class="anchored" data-anchor-id="cargue-las-librerías-a-utilizar-terra-tmap-sf-spdep.">1. Cargue las librerías a utilizar (terra, tmap, sf, spdep).</h4>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>terra 1.7.71</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Breaking News: tmap 3.x is retiring. Please test v4, e.g. with
+remotes::install_github('r-tmap/tmap')</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Linking to GEOS 3.11.0, GDAL 3.5.3, PROJ 9.1.0; sf_use_s2() is TRUE</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: spData</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>To access larger datasets in this package, install the spDataLarge
+package with: `install.packages('spDataLarge',
+repos='https://nowosad.github.io/drat/', type='source')`</code></pre>
+</div>
+</div>
+</section>
+<section id="ubicar-el-directorio-de-trabajo-en-la-ubicación-del-archivo-actual" class="level4">
+<h4 class="anchored" data-anchor-id="ubicar-el-directorio-de-trabajo-en-la-ubicación-del-archivo-actual">2. Ubicar el directorio de trabajo en la ubicación del archivo actual</h4>
+</section>
+<section id="descarge-el-shapefile-llamado-incidencemap-el-cual-tiene-datos-de-incidencias-por-accidente-ofídico-a-nivel-departamental-defina-su-working-directory-y-cargue-los-datos-vectoriales." class="level4">
+<h4 class="anchored" data-anchor-id="descarge-el-shapefile-llamado-incidencemap-el-cual-tiene-datos-de-incidencias-por-accidente-ofídico-a-nivel-departamental-defina-su-working-directory-y-cargue-los-datos-vectoriales.">3. Descarge el shapefile llamado IncidenceMap, el cual tiene datos de incidencias por accidente ofídico a nivel departamental, defina su working directory y cargue los datos vectoriales.</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Leemos el mapa </span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>MapSB<span class="ot">=</span><span class="fu">vect</span>(<span class="st">"IncidenceMapClass/IncidenceMapClass.shp"</span>) </span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">#Vemos el mapa como un dataframe</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="fu">View</span>(<span class="fu">as.data.frame</span>(MapSB)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="haga-una-gráfica-de-los-datos-de-incidencia-anual-por-cada-100.000-habitantes-variable-intot.-para-esto-vamos-a-usar-la-librería-tmap-que-hace-mapas-basado-en-el-lenguaje-por-capas-de-ggplot.-cada-va-aumentando-una-capa-y-tenemos-que-usar-el-comando-st_as_sf-sobre-nuestro-mapa-para-convertirlo-a-formato-sf-y-que-pueda-ser-usado-por-la-librería.-con-tm_shape-definimos-lo-que-graficaremos-y-la-base-de-datos-shapefile-a-utilizar-con-tm_polygons-elegimos-las-características-de-los-polígonos-y-como-los-vamos-a-colorear-y-con-tm_legend-definimos-la-leyenda-de-la-figura." class="level4">
+<h4 class="anchored" data-anchor-id="haga-una-gráfica-de-los-datos-de-incidencia-anual-por-cada-100.000-habitantes-variable-intot.-para-esto-vamos-a-usar-la-librería-tmap-que-hace-mapas-basado-en-el-lenguaje-por-capas-de-ggplot.-cada-va-aumentando-una-capa-y-tenemos-que-usar-el-comando-st_as_sf-sobre-nuestro-mapa-para-convertirlo-a-formato-sf-y-que-pueda-ser-usado-por-la-librería.-con-tm_shape-definimos-lo-que-graficaremos-y-la-base-de-datos-shapefile-a-utilizar-con-tm_polygons-elegimos-las-características-de-los-polígonos-y-como-los-vamos-a-colorear-y-con-tm_legend-definimos-la-leyenda-de-la-figura.">4. Haga una gráfica de los datos de incidencia anual por cada 100.000 habitantes (Variable “InTot”). Para esto vamos a usar la librería tmap que hace mapas basado en el lenguaje por capas de ggplot. Cada + va aumentando una capa, y tenemos que usar el comando st_as_sf() sobre nuestro mapa para convertirlo a formato sf y que pueda ser usado por la librería. Con tm_shape definimos lo que graficaremos y la base de datos shapefile a utilizar, con tm_polygons elegimos las características de los polígonos y como los vamos a colorear, y con tm_legend definimos la leyenda de la figura.</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(<span class="fu">st_as_sf</span>(MapSB))<span class="sc">+</span><span class="fu">tm_polygons</span>(<span class="at">style=</span><span class="st">"quantile"</span>,<span class="at">col=</span><span class="st">"InTot"</span>)<span class="sc">+</span> <span class="fu">tm_legend</span>(<span class="at">outside=</span><span class="cn">TRUE</span>,<span class="at">text.size=</span><span class="fl">0.8</span>) <span class="co">#Grafico Mapa Incidencia</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Lab2_AUV_Mod1_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="antes-de-calcular-los-indices-necesitamos-definir-los-vecinos.-primero-vamos-a-trabajar-con-vecinos-contiguos-pero-hay-mas-maneras-de-declarar-vecinos.-para-declarar-los-vecinos-contiguos-usamos-el-comando-poly2nb.-en-este-comando-toca-transformar-nuestro-mapa-nuevamente-a-sf." class="level4">
+<h4 class="anchored" data-anchor-id="antes-de-calcular-los-indices-necesitamos-definir-los-vecinos.-primero-vamos-a-trabajar-con-vecinos-contiguos-pero-hay-mas-maneras-de-declarar-vecinos.-para-declarar-los-vecinos-contiguos-usamos-el-comando-poly2nb.-en-este-comando-toca-transformar-nuestro-mapa-nuevamente-a-sf.">5. Antes de calcular los indices, necesitamos definir los vecinos. Primero vamos a trabajar con vecinos contiguos, pero hay mas maneras de declarar vecinos. Para declarar los vecinos contiguos usamos el comando poly2nb(). En este comando toca transformar nuestro mapa nuevamente a sf.</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Calculamos vecinos CONTIGUOS</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>nb <span class="ot">=</span> <span class="fu">poly2nb</span>(<span class="fu">st_as_sf</span>(MapSB),<span class="at">row.names=</span>MapSB<span class="sc">$</span>ID,<span class="at">queen=</span><span class="cn">TRUE</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="ahora-vamos-a-calcular-la-lista-de-pesos-de-cada-vecino-lo-cual-es-algo-que-hay-que-hacer-para-cada-tipo-de-análisis-de-autocorrelación-espacial-ya-que-gracias-a-esto-podemos-calcular-los-estadísticos.-usaremos-la-funcion-nb2listw-para-definir-estos-pesos-y-en-esta-función-styleu-define-un-peso-igual-para-cada-vecino-donde-la-suma-total-da-igual-a-1." class="level4">
+<h4 class="anchored" data-anchor-id="ahora-vamos-a-calcular-la-lista-de-pesos-de-cada-vecino-lo-cual-es-algo-que-hay-que-hacer-para-cada-tipo-de-análisis-de-autocorrelación-espacial-ya-que-gracias-a-esto-podemos-calcular-los-estadísticos.-usaremos-la-funcion-nb2listw-para-definir-estos-pesos-y-en-esta-función-styleu-define-un-peso-igual-para-cada-vecino-donde-la-suma-total-da-igual-a-1.">6. Ahora, vamos a calcular la lista de pesos de cada vecino, lo cual es algo que hay que hacer para cada tipo de análisis de autocorrelación espacial, ya que gracias a esto podemos calcular los estadísticos. Usaremos la funci’on nb2listw() para definir estos pesos, y en esta función style=”U” define un peso igual para cada vecino, donde la suma total da igual a 1.</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Asignamos los pesos a cada vecino</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>lw <span class="ot">=</span> <span class="fu">nb2listw</span>(nb,<span class="at">style=</span><span class="st">"U"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="con-estos-pesos-ya-podemos-calcular-la-incidencia-desfazada-con-lag-usando-el-comando-lag.litw.-para-esto-usamos-nuestra-lista-de-pesos-y-la-variable-intot.-una-ves-calculada-esta-incidencia-desfazada-podemos-hacer-el-moran-plot-para-ver-si-tenemos-algún-tipo-de-asociación-y-mirar-una-regresión-lineal-normal-para-ver-el-comportamiento-y-el-valor-de-la-pendiente." class="level4">
+<h4 class="anchored" data-anchor-id="con-estos-pesos-ya-podemos-calcular-la-incidencia-desfazada-con-lag-usando-el-comando-lag.litw.-para-esto-usamos-nuestra-lista-de-pesos-y-la-variable-intot.-una-ves-calculada-esta-incidencia-desfazada-podemos-hacer-el-moran-plot-para-ver-si-tenemos-algún-tipo-de-asociación-y-mirar-una-regresión-lineal-normal-para-ver-el-comportamiento-y-el-valor-de-la-pendiente.">7. Con estos pesos ya podemos calcular la incidencia desfazada (con lag), usando el comando lag.litw(). Para esto usamos nuestra lista de pesos, y la variable InTot. Una ves calculada esta incidencia desfazada, podemos hacer el moran plot para ver si tenemos algún tipo de asociación, y mirar una regresión lineal normal para ver el comportamiento y el valor de la pendiente.</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Caluclo incidencia laggeada</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>Inc.lag<span class="ot">=</span><span class="fu">lag.listw</span>(lw,MapSB<span class="sc">$</span>InTot) </span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co">#Grafico Moran</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(Inc.lag<span class="sc">~</span>MapSB<span class="sc">$</span>InTot) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Lab2_AUV_Mod1_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Regresion lineal entre datos "lageados" y datos</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">lm</span>(Inc.lag<span class="sc">~</span>MapSB<span class="sc">$</span>InTot)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = Inc.lag ~ MapSB$InTot)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.80655 -0.29881 -0.08055  0.14532  1.42701 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept) 0.412266   0.118717   3.473 0.001638 ** 
+MapSB$InTot 0.013353   0.003483   3.833 0.000628 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 0.4701 on 29 degrees of freedom
+Multiple R-squared:  0.3363,    Adjusted R-squared:  0.3134 
+F-statistic: 14.69 on 1 and 29 DF,  p-value: 0.000628</code></pre>
+</div>
+</div>
+</section>
+<section id="ahora-vamos-a-calcular-el-p-val-de-forma-corregida-y-analítica-y-también-con-simulaciones-de-montecarlo.-recuerde-que-siempre-es-mejor-usar-las-simulaciones-de-montecarlo-para-evitar-tener-tantos-supuestos.-el-comando-moran.test-nos-permite-calcular-de-forma-analítica-el-p-value-y-el-índice-de-moran-mientras-que-moran.mc-nos-permite-hacer-simulaciones-de-montercarlo-para-calcularlo." class="level4">
+<h4 class="anchored" data-anchor-id="ahora-vamos-a-calcular-el-p-val-de-forma-corregida-y-analítica-y-también-con-simulaciones-de-montecarlo.-recuerde-que-siempre-es-mejor-usar-las-simulaciones-de-montecarlo-para-evitar-tener-tantos-supuestos.-el-comando-moran.test-nos-permite-calcular-de-forma-analítica-el-p-value-y-el-índice-de-moran-mientras-que-moran.mc-nos-permite-hacer-simulaciones-de-montercarlo-para-calcularlo.">8. Ahora, vamos a calcular el p-val de forma corregida y analítica, y también con simulaciones de Montecarlo. Recuerde que siempre es mejor usar las simulaciones de Montecarlo para evitar tener tantos supuestos. El comando moran.test() nos permite calcular de forma analítica el p-value y el índice de moran, mientras que moran.mc() nos permite hacer simulaciones de montercarlo para calcularlo.</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">#p-val analítico con suposiciones</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">moran.test</span>(MapSB<span class="sc">$</span>InTot,lw) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Moran I test under randomisation
+
+data:  MapSB$InTot  
+weights: lw    
+
+Moran I statistic standard deviate = 5.0437, p-value = 2.283e-07
+alternative hypothesis: greater
+sample estimates:
+Moran I statistic       Expectation          Variance 
+      0.465294999      -0.033333333       0.009773473 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">#P-VAL CON MONTECARLO</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co">#P val con menos suposiciones. Ojo con nsim, ya que es el que define que tan robusto es mi estimación de la distribución. plot(MC)#Grafico distribucion p-val a partir de montecarlo</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>MC<span class="ot">=</span><span class="fu">moran.mc</span>(MapSB<span class="sc">$</span>InTot,lw,<span class="at">nsim=</span><span class="dv">100000</span>) </span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>MC</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Monte-Carlo simulation of Moran I
+
+data:  MapSB$InTot 
+weights: lw  
+number of simulations + 1: 100001 
+
+statistic = 0.46529, observed rank = 1e+05, p-value = 1e-05
+alternative hypothesis: greater</code></pre>
+</div>
+</div>
+</section>
+<section id="tenemos-una-autocorrelación-espacial-en-nuestros-datos-de-incidencia-por-mordedura-de-serpientes.-ahora-queremos-cambiar-el-tipo-de-vecinos-y-usar-k-nearest.-para-esto-primero-debemos-sacar-un-data.frame-que-tenga-las-coordenadas-de-los-centroides-de-cada-departamento-para-sobre-esto-calcular-los-vecinos-mas-cercanos-con-base-en-distancias-entre-puntos.-con-crds-obtenemos-un-data.frame-de-coordenadas-de-un-set-de-puntos-y-con-centroids-obtenemos-los-centroides-de-un-mapa-vectorial.-con-knearneigh-definimos-la-lista-de-vecinos-mas-cercanos-pero-sale-en-un-formato-que-no-se-puede-usar-para-calcular-los-pesos-con-nb2listw.-por-esto-toca-usar-el-comando-knn2nb-para-pasar-el-formato-al-necesario-y-poder-realizar-nuestro-análisis." class="level4">
+<h4 class="anchored" data-anchor-id="tenemos-una-autocorrelación-espacial-en-nuestros-datos-de-incidencia-por-mordedura-de-serpientes.-ahora-queremos-cambiar-el-tipo-de-vecinos-y-usar-k-nearest.-para-esto-primero-debemos-sacar-un-data.frame-que-tenga-las-coordenadas-de-los-centroides-de-cada-departamento-para-sobre-esto-calcular-los-vecinos-mas-cercanos-con-base-en-distancias-entre-puntos.-con-crds-obtenemos-un-data.frame-de-coordenadas-de-un-set-de-puntos-y-con-centroids-obtenemos-los-centroides-de-un-mapa-vectorial.-con-knearneigh-definimos-la-lista-de-vecinos-mas-cercanos-pero-sale-en-un-formato-que-no-se-puede-usar-para-calcular-los-pesos-con-nb2listw.-por-esto-toca-usar-el-comando-knn2nb-para-pasar-el-formato-al-necesario-y-poder-realizar-nuestro-análisis.">9. Tenemos una autocorrelación espacial en nuestros datos de incidencia por mordedura de serpientes. Ahora, queremos cambiar el tipo de vecinos y usar K-Nearest. Para esto primero debemos sacar un data.frame que tenga las coordenadas de los centroides de cada departamento, para sobre esto calcular los vecinos mas cercanos con base en distancias entre puntos. Con crds() obtenemos un data.frame de coordenadas de un set de puntos, y con centroids() obtenemos los centroides de un mapa vectorial. Con knearneigh() definimos la lista de vecinos mas cercanos, pero sale en un formato que no se puede usar para calcular los pesos con nb2listw(). Por esto, toca usar el comando knn2nb() para pasar el formato al necesario y poder realizar nuestro análisis.</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Obtenemos centroides</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>coo<span class="ot">=</span><span class="fu">crds</span>(<span class="fu">centroids</span>(MapSB))</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="co">#3 vecinos mas cercanos</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>nb2<span class="ot">=</span><span class="fu">knearneigh</span>(coo,<span class="at">k=</span><span class="dv">3</span>) </span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="co">#Pasamos a formato de vecinos</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>nb2<span class="ot">=</span><span class="fu">knn2nb</span>(nb2) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="ya-con-esto-podemos-volver-a-calcular-los-pesos-y-calcular-el-índice-de-moran." class="level4">
+<h4 class="anchored" data-anchor-id="ya-con-esto-podemos-volver-a-calcular-los-pesos-y-calcular-el-índice-de-moran.">10. Ya con esto, podemos volver a calcular los pesos y calcular el índice de Moran.</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">#PESOS</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>lw<span class="ot">=</span><span class="fu">nb2listw</span>(nb2,<span class="at">style=</span><span class="st">"U"</span>,<span class="at">zero.policy=</span>T)</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>MI <span class="ot">=</span> <span class="fu">moran.mc</span>(MapSB<span class="sc">$</span>TotCases,lw,<span class="at">nsim=</span><span class="dv">10000</span>,<span class="at">zero.policy=</span>T) </span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>MI</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Monte-Carlo simulation of Moran I
+
+data:  MapSB$TotCases 
+weights: lw  
+number of simulations + 1: 10001 
+
+statistic = 0.36061, observed rank = 9992, p-value = 0.0008999
+alternative hypothesis: greater</code></pre>
+</div>
+</div>
+</section>
+<section id="seguimos-obteniendo-una-autocorrelación-espacial-positiva-para-la-incidencia-por-cada-100.000-habitantes-por-año-de-accidente-ofídico.-ahora-vamos-a-calcular-el-valor-de-moran-local.-para-esto-el-procedimiento-es-el-mismo.-en-este-caso-vamos-a-trabajar-con-los-4-vecinos-mas-cercanos." class="level4">
+<h4 class="anchored" data-anchor-id="seguimos-obteniendo-una-autocorrelación-espacial-positiva-para-la-incidencia-por-cada-100.000-habitantes-por-año-de-accidente-ofídico.-ahora-vamos-a-calcular-el-valor-de-moran-local.-para-esto-el-procedimiento-es-el-mismo.-en-este-caso-vamos-a-trabajar-con-los-4-vecinos-mas-cercanos.">11. Seguimos obteniendo una autocorrelación espacial positiva para la incidencia por cada 100.000 habitantes por año de accidente ofídico. Ahora vamos a calcular el valor de Moran local. Para esto, el procedimiento es el mismo. En este caso vamos a trabajar con los 4 vecinos mas cercanos.</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Definimos nuevamente los centroides y sacamos las coordenadas</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>coo<span class="ot">=</span><span class="fu">crds</span>(<span class="fu">centroids</span>(MapSB))</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="co">#Usamos los 4 vecinos mas cercanos</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>nb2<span class="ot">=</span><span class="fu">knearneigh</span>(coo,<span class="at">k=</span><span class="dv">4</span>) </span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="co">#Cambiamos el formato</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>nb2<span class="ot">=</span><span class="fu">knn2nb</span>(nb2) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="algo-interesante-de-analizar-es-ver-un-plot-en-el-que-tengamos-las-conexiones-obtenidas-entre-cada-departamento-y-sus-vecinos-y-esto-lo-podemos-graficar-con-los-gráficos-default-de-r." class="level5">
+<h5 class="anchored" data-anchor-id="algo-interesante-de-analizar-es-ver-un-plot-en-el-que-tengamos-las-conexiones-obtenidas-entre-cada-departamento-y-sus-vecinos-y-esto-lo-podemos-graficar-con-los-gráficos-default-de-r.">12. Algo interesante de analizar es ver un plot en el que tengamos las conexiones obtenidas entre cada departamento y sus vecinos, y esto lo podemos graficar con los gráficos default de R.</h5>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Graficamos los bordes de los departamentos</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(MapSB,<span class="at">border=</span><span class="st">"lightgrey"</span>)  </span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="co">#Añadimos las líneas en rojo de los vecinos.</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(nb2,coo,<span class="at">pch=</span><span class="dv">19</span>,<span class="at">cex=</span><span class="fl">0.6</span>,<span class="at">add=</span><span class="cn">TRUE</span>,<span class="at">col=</span><span class="st">"red"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Lab2_AUV_Mod1_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+</section>
+<section id="antes-de-calcular-el-moran-local-tenemos-que-calcular-la-lista-de-pesos." class="level4">
+<h4 class="anchored" data-anchor-id="antes-de-calcular-el-moran-local-tenemos-que-calcular-la-lista-de-pesos.">13. Antes de calcular el moran local, tenemos que calcular la lista de pesos.</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>wb<span class="ot">=</span><span class="fu">nb2listw</span>(nb,<span class="at">zero.policy=</span>T,<span class="at">style=</span><span class="st">"U"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="ya-con-esto-podemos-calcular-el-moran-local.-usamos-el-comando-localmoran_perm-ya-que-vamos-a-calcular-p-values-por-permutaciones." class="level4">
+<h4 class="anchored" data-anchor-id="ya-con-esto-podemos-calcular-el-moran-local.-usamos-el-comando-localmoran_perm-ya-que-vamos-a-calcular-p-values-por-permutaciones.">14. Ya con esto podemos calcular el moran local. Usamos el comando localmoran_perm() ya que vamos a calcular p-values por permutaciones.</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co">#MORAN I LOCAL </span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>local_moran<span class="ot">=</span><span class="fu">localmoran_perm</span>(MapSB<span class="sc">$</span>InTot,wb,<span class="at">nsim=</span><span class="dv">1000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="la-variable-local_moran-consiste-en-una-matriz-con-9-columnas-donde-ii-tiene-el-valor-del-índice-para-cada-departamento-y-prz-eii-es-el-p-value-de-las-simulaciones-por-montecarlo.-vamos-a-adicionar-el-índice-de-moran-y-el-pval-a-nuestro-mapa-y-lo-haremos-con-base-en-la-posición-de-la-columna." class="level4">
+<h4 class="anchored" data-anchor-id="la-variable-local_moran-consiste-en-una-matriz-con-9-columnas-donde-ii-tiene-el-valor-del-índice-para-cada-departamento-y-prz-eii-es-el-p-value-de-las-simulaciones-por-montecarlo.-vamos-a-adicionar-el-índice-de-moran-y-el-pval-a-nuestro-mapa-y-lo-haremos-con-base-en-la-posición-de-la-columna.">15. La variable local_moran consiste en una matriz con 9 columnas, donde Ii tiene el valor del índice para cada departamento, y Pr(z != E(Ii)) es el p-value de las simulaciones por Montecarlo. Vamos a adicionar el índice de moran y el pval a nuestro mapa, y lo haremos con base en la posición de la columna.</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co">#MAPA MORAN LOCAL </span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="co">#Local moran </span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>MapSB<span class="sc">$</span>LocMor<span class="ot">=</span>local_moran[,<span class="dv">1</span>] </span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="co">#pval</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>MapSB<span class="sc">$</span>LocMorPVAL<span class="ot">=</span>local_moran[,<span class="dv">6</span>] </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="por-último-vamos-a-graficar-únicamente-el-valor-del-moran-local-para-los-lugares-con-significancia-dejando-los-sitios-no-significativos-un-valor-de-cero.-para-esto-primero-creamos-una-variable-que-es-significancia-que-va-a-ser-true-o-false-con-base-en-nuestro-p-value-y-luego-multiplicamos-el-índice-de-moran-por-esta-variable." class="level4">
+<h4 class="anchored" data-anchor-id="por-último-vamos-a-graficar-únicamente-el-valor-del-moran-local-para-los-lugares-con-significancia-dejando-los-sitios-no-significativos-un-valor-de-cero.-para-esto-primero-creamos-una-variable-que-es-significancia-que-va-a-ser-true-o-false-con-base-en-nuestro-p-value-y-luego-multiplicamos-el-índice-de-moran-por-esta-variable.">16. Por último, vamos a graficar únicamente el valor del moran local para los lugares con significancia, dejando los sitios no significativos un valor de cero. Para esto primero creamos una variable que es significancia que va a ser TRUE o FALSE con base en nuestro p-value, y luego multiplicamos el índice de moran por esta variable.</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Significancia: 0.05, por ende a los menores les damos valor de TRUE (1) y los mayores de FALSE (0)</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>MapSB<span class="sc">$</span>sig<span class="ot">=</span>(MapSB<span class="sc">$</span>LocMorPVAL<span class="sc">&lt;</span><span class="fl">0.05</span>) </span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="co">#Aca hacemos la multiplicación, todo lo significativo (MapSB$sig &lt; 0.05) es multiplicado por 1, y lo otro por cero.</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>MapSB<span class="sc">$</span>LocMorsig<span class="ot">=</span>MapSB<span class="sc">$</span>LocMor<span class="sc">*</span>MapSB<span class="sc">$</span>sig </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="ahora-graficamos-esta-variable.-podemos-observar-que-la-parte-mas-afectada-siendo-valores-positivos-de-autocorrelación-aquellos-donde-tenemos-mas-casos-en-cada-departamento-predicen-mas-casos-en-sus-vecinos." class="level4">
+<h4 class="anchored" data-anchor-id="ahora-graficamos-esta-variable.-podemos-observar-que-la-parte-mas-afectada-siendo-valores-positivos-de-autocorrelación-aquellos-donde-tenemos-mas-casos-en-cada-departamento-predicen-mas-casos-en-sus-vecinos.">17. Ahora graficamos esta variable. Podemos observar que la parte mas afectada siendo valores positivos de autocorrelación aquellos donde tenemos mas casos en cada departamento predicen mas casos en sus vecinos.</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(<span class="fu">st_as_sf</span>(MapSB))<span class="sc">+</span><span class="fu">tm_polygons</span>(<span class="at">col=</span><span class="st">"LocMorsig"</span>,<span class="at">palette=</span><span class="st">"-RdBu"</span>)<span class="sc">+</span> <span class="fu">tm_legend</span>(<span class="at">outside=</span><span class="cn">TRUE</span>,<span class="at">text.size=</span><span class="fl">0.8</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Variable(s) "LocMorsig" contains positive and negative values, so midpoint is set to 0. Set midpoint = NA to show the full spectrum of the color palette.</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="Lab2_AUV_Mod1_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="por-último-vamos-a-calcular-el-índice-de-getisord-con-base-en-la-misma-lista-de-pesos-que-usamos-para-el-moran-local.-usamos-el-comando-localg_perm-para-obtener-los-resultados-con-permutaciones-y-calcular-p-values-sin-suposiciones." class="level4">
+<h4 class="anchored" data-anchor-id="por-último-vamos-a-calcular-el-índice-de-getisord-con-base-en-la-misma-lista-de-pesos-que-usamos-para-el-moran-local.-usamos-el-comando-localg_perm-para-obtener-los-resultados-con-permutaciones-y-calcular-p-values-sin-suposiciones.">18. Por último, vamos a calcular el índice de GetisOrd con base en la misma lista de pesos que usamos para el moran local. Usamos el comando localG_perm() para obtener los resultados con permutaciones y calcular p-values sin suposiciones.</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>Gi<span class="ot">=</span><span class="fu">localG_perm</span>(MapSB<span class="sc">$</span>InTot,wb,<span class="at">nsim=</span><span class="dv">1000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="primero-añadimos-al-mapa-los-valores-del-índice-y-usamos-as.matrix-para-pasar-a-formato-numerico" class="level4">
+<h4 class="anchored" data-anchor-id="primero-añadimos-al-mapa-los-valores-del-índice-y-usamos-as.matrix-para-pasar-a-formato-numerico">19. Primero añadimos al mapa los valores del índice, y usamos as.matrix() para pasar a formato numerico:</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>Giv<span class="ot">=</span><span class="fu">matrix</span>(Gi) <span class="co">#Formato vector para añadir al mapa</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="el-output-de-local_perm-viene-también-con-atributos-de-clase-los-cuales-tienen-mas-información-como-el-tipo-de-cluster-y-los-p-values.-para-obtener-el-tipo-de-cluster-high-low-usamos-el-atributo-cluster" class="level4">
+<h4 class="anchored" data-anchor-id="el-output-de-local_perm-viene-también-con-atributos-de-clase-los-cuales-tienen-mas-información-como-el-tipo-de-cluster-y-los-p-values.-para-obtener-el-tipo-de-cluster-high-low-usamos-el-atributo-cluster">20. El output de local_perm() viene también con atributos de clase, los cuales tienen mas información como el tipo de cluster y los p-values. Para obtener el tipo de cluster (High, Low) usamos el atributo cluster:</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Obtenemos el numero de cluster</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>Clust<span class="ot">=</span><span class="fu">attr</span>(Gi,<span class="st">"cluster"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="para-obtener-los-pvalues-tenemos-que-guardar-como-data.frame-el-atributo-internals-de-nuestro-gi" class="level4">
+<h4 class="anchored" data-anchor-id="para-obtener-los-pvalues-tenemos-que-guardar-como-data.frame-el-atributo-internals-de-nuestro-gi">21. Para obtener los pvalues, tenemos que guardar como data.frame el atributo internals de nuestro Gi:</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>Res<span class="ot">=</span><span class="fu">data.frame</span>(<span class="fu">attr</span>(Gi,<span class="st">"internals"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="ya-con-esto-añadimos-los-datos-al-mapa" class="level4">
+<h4 class="anchored" data-anchor-id="ya-con-esto-añadimos-los-datos-al-mapa">22. Ya con esto añadimos los datos al mapa:</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Obtenemos los p-values con simulaciones </span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>Pval<span class="ot">=</span>Res<span class="sc">$</span>Pr.z....E.Gi...Sim </span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a><span class="co">#Definimos significativos y no significativos</span></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>Pval<span class="ot">=</span>Pval<span class="sc">&lt;</span><span class="fl">0.05</span></span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a><span class="co">#Añadimos el Getis Ord al mapa</span></span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>MapSB<span class="sc">$</span>Gi<span class="ot">=</span>Giv </span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a><span class="co">#Añadimos el tipo de cluster MapSB$GiPval=MapSB$Gi*Pval #Añadimos solo los Getis Ord significativos</span></span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>MapSB<span class="sc">$</span>Giclust<span class="ot">=</span>Clust </span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a><span class="co">#Añadimos solo los Getis Ord significativos</span></span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>MapSB<span class="sc">$</span>GiPval<span class="ot">=</span>MapSB<span class="sc">$</span>Gi<span class="sc">*</span>Pval </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="ya-con-esto-procedemos-a-gráficar-los-getis-ord-significativos." class="level4">
+<h4 class="anchored" data-anchor-id="ya-con-esto-procedemos-a-gráficar-los-getis-ord-significativos.">23. Ya con esto, procedemos a gráficar los Getis-ord significativos.</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(<span class="fu">st_as_sf</span>(MapSB))<span class="sc">+</span><span class="fu">tm_polygons</span>(<span class="at">col=</span><span class="st">"GiPval"</span>,<span class="at">style=</span><span class="st">"pretty"</span>,<span class="at">palette=</span><span class="st">"-RdBu"</span>)<span class="sc">+</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_legend</span>(<span class="at">outside=</span><span class="cn">TRUE</span>,<span class="at">text.size=</span><span class="fl">0.8</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Variable(s) "GiPval" contains positive and negative values, so midpoint is set to 0. Set midpoint = NA to show the full spectrum of the color palette.</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="Lab2_AUV_Mod1_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Podemos observar que la región que forma un clúster de mayor riesgo esta en la parte amazónica del país.</p>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
